@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SETRAM - Mes cartes</title>
+    <style>
+        /* --- CONFIGURATION GÉNÉRALE --- */
+        :root {
+            --primary-blue: #0056a4;
+            --bg-gray: #f2f4f7;
+            --nav-gray: #8e8e93;
+        }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #e0e5ec;
+            display: flex; justify-content: center; align-items: center; height: 100vh;
+            overflow: hidden; user-select: none;
+        }
+
+        /* --- CONTENEUR MOBILE --- */
+        .app-container {
+            width: 100%; max-width: 414px; height: 100%; max-height: 896px;
+            background-color: var(--bg-gray); 
+            display: flex; flex-direction: column;
+            position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.15); overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        .app-header {
+            height: 110px;
+            background-color: white;
+            display: flex; align-items: flex-end; justify-content: space-between;
+            padding: 0 20px 15px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            z-index: 10;
+            position: relative;
+            flex-shrink: 0; /* Le header ne s'écrase pas */
+        }
+        
+        .header-bg-decoration {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.05; pointer-events: none;
+            background-image: radial-gradient(#0056a4 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+
+        .header-title {
+            color: var(--primary-blue); font-size: 1.1rem; font-weight: 600;
+            position: absolute; left: 50%; transform: translateX(-50%); bottom: 18px;
+        }
+
+        .header-icon-svg { width: 26px; height: 26px; stroke: var(--primary-blue); stroke-width: 1.8; }
+
+        /* --- LOGO --- */
+        .logo-setram-img {
+            height: 40px; 
+            width: auto; /* Auto pour garder le ratio */
+            max-width: 120px; /* Sécurité */
+            object-fit: contain;
+            margin-bottom: -5px; 
+        }
+
+        /* --- ZONE PRINCIPALE --- */
+        .app-content {
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            padding: 20px; 
+            position: relative;
+            width: 100%;
+        }
+
+        /* ========================================================== */
+        /* --- MODIFICATION ICI : SCÈNE 3D RESPONSIVE --- */
+        /* ========================================================== */
+        .scene {
+            /* 1. Largeur dynamique (70% de l'écran) */
+            width: 70%; 
+            
+            /* 2. Largeur maximum pour les écrans larges */
+            max-width: 300px; 
+
+            /* 3. Ratio hauteur/largeur verrouillé (Format carte vertical) */
+            aspect-ratio: 260 / 410;
+            
+            /* 4. La hauteur se calcule automatiquement */
+            height: auto; 
+            
+            perspective: 1200px; 
+            cursor: grab;
+            
+            /* Marges */
+            margin-bottom: 20px; 
+            margin-top: -20px; /* Remonte légèrement la carte */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .scene:active { cursor: grabbing; }
+
+        .card {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d; border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 40, 80, 0.25);
+        }
+        .card.is-animating { transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+        /* --- FACES --- */
+        .card__face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
+            border-radius: 20px; overflow: hidden;
+            /* Important : cover permet à l'image de remplir la carte responsive */
+            background-size: cover; 
+            background-position: center; 
+            background-repeat: no-repeat;
+            background-color: white;
+        }
+
+        /* RECTO */
+        .card__face--front { background-image: url('https://i.ibb.co/wZmrGFhL/IMG-8097.jpg'); }
+
+        /* VERSO */
+        .card__face--back {
+            background-image: url('https://i.ibb.co/TqvnXp6S/51-A4-F091-3-B4-E-4469-BAEF-8-CCFAD657311.jpg');
+            transform: rotateY(180deg);
+        }
+
+        /* --- PAGINATION --- */
+        .pagination-container {
+            width: 100%; padding: 0 20px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; /* Ne rétrécit pas */
+        }
+        
+        .btn-pill {
+            background: #e0e0e0; color: white;
+            padding: 10px 20px; border-radius: 30px;
+            font-size: 0.9rem; font-weight: 600; border: none;
+            display: flex; align-items: center; gap: 8px;
+            white-space: nowrap; /* Texte sur une seule ligne */
+        }
+        .btn-next { background: var(--primary-blue); box-shadow: 0 4px 10px rgba(0,86,164,0.3); cursor: pointer; }
+        .page-indicator { color: #003366; font-weight: 700; font-size: 1rem; }
+
+        /* --- BARRE DE NAVIGATION BASSE --- */
+        .bottom-nav {
+            height: 85px; background: white;
+            display: flex; justify-content: space-around; align-items: flex-start;
+            padding-top: 15px; border-top: 1px solid #ebedf0;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.02);
+            flex-shrink: 0;
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 0.7rem; color: var(--nav-gray); gap: 6px;
+            width: 20%; position: relative; cursor: pointer;
+        }
+        .nav-icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+        .nav-item.active { color: var(--primary-blue); }
+        .nav-item.active .icon-circle {
+            background-color: #dbeafe; width: 48px; height: 48px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: -25px; background: white;
+            border: 4px solid var(--bg-gray); box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+        .nav-item.active .nav-icon { stroke: var(--primary-blue); fill: var(--primary-blue); stroke-width: 0; width: 24px; height: 24px; }
+        .icon-cards-active rect { fill: var(--primary-blue); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-bg-decoration"></div>
+            
+            <img 
+                src="https://i.ibb.co/G3HyWqws/SETRAM-Logo.png" 
+                alt="Logo Setram" 
+                class="logo-setram-img"
+            >
+            <div class="header-title">Mes cartes</div>
+
+            <div style="display: flex; gap: 15px;">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <div class="scene">
+                <div class="card" id="card">
+                    <div class="card__face card__face--front"></div>
+                    <div class="card__face card__face--back"></div>
+                </div>
+            </div>
+
+            <div class="pagination-container">
+                <div class="btn-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Précédent
+                </div>
+                <div class="page-indicator">1 / 2 Cartes</div>
+                <div class="btn-pill btn-next">
+                    Suivant
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Accueil</span>
+            </div>
+            <div class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>Position</span>
+            </div>
+            <div class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>Horaires</span>
+            </div>
+            <div class="nav-item active">
+                <div class="icon-circle">
+                    <svg class="nav-icon icon-cards-active" viewBox="0 0 24 24">
+                        <rect x="2" y="6" width="16" height="12" rx="2" transform="rotate(-10 10 12)" fill="#dbeafe" stroke="none"/>
+                        <rect x="6" y="6" width="16" height="12" rx="2" fill="currentColor" stroke="none"/>
+                    </svg>
+                </div>
+                <span>Mes cartes</span>
+            </div>
+            <div class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>Profile</span>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        const card = document.getElementById('card');
+        const scene = document.querySelector('.scene');
+
+        let isDragging = false;
+        let startX = 0;
+        let currentRotation = 0;
+        let tempRotation = 0;
+
+        const startDrag = (e) => {
+            isDragging = true;
+            startX = e.pageX || e.touches[0].pageX;
+            card.classList.remove('is-animating');
+        };
+
+        const onDrag = (e) => {
+            if (!isDragging) return;
+            e.preventDefault(); 
+            const x = e.pageX || e.touches[0].pageX;
+            const walk = (x - startX); 
+            const sensitivity = 0.5; 
+            tempRotation = currentRotation + (walk * sensitivity);
+            card.style.transform = `rotateY(${tempRotation}deg)`;
+        };
+
+        const stopDrag = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            card.classList.add('is-animating');
+            const snappedRotation = Math.round(tempRotation / 180) * 180;
+            card.style.transform = `rotateY(${snappedRotation}deg)`;
+            currentRotation = snappedRotation;
+        };
+
+        scene.addEventListener('mousedown', startDrag);
+        window.addEventListener('mousemove', onDrag);
+        window.addEventListener('mouseup', stopDrag);
+        scene.addEventListener('mouseleave', stopDrag);
+
+        scene.addEventListener('touchstart', startDrag);
+        window.addEventListener('touchmove', onDrag, { passive: false });
+        window.addEventListener('touchend', stopDrag);
+    </script>
+</body>
+</html>
