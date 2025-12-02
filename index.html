@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SETRAM - Mes cartes</title>
+    <title>SETRAM - App</title>
     <style>
         /* --- CONFIGURATION GÉNÉRALE --- */
         :root {
@@ -20,16 +20,10 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #e0e5ec;
             display: flex; justify-content: center; align-items: center; 
-            
-            /* --- MODIFICATION 2 : Gestion de la hauteur dynamique sur mobile --- */
-            height: 100vh;       /* Fallback */
-            height: 100dvh;      /* La vraie solution pour Safari/Chrome mobile */
-            /* ------------------------------------------------------------------ */
-            
+            height: 100vh; height: 100dvh; 
             overflow: hidden; user-select: none;
         }
 
-        /* --- CONTENEUR MOBILE --- */
         .app-container {
             width: 100%; max-width: 414px; height: 100%; max-height: 896px;
             background-color: var(--bg-gray); 
@@ -62,40 +56,41 @@
         }
 
         .header-icon-svg { width: 26px; height: 26px; stroke: var(--primary-blue); stroke-width: 1.8; }
+        .logo-setram-img { height: 40px; width: auto; max-width: 120px; object-fit: contain; margin-bottom: -5px; }
 
-        /* --- LOGO --- */
-        .logo-setram-img {
-            height: 40px; 
-            width: auto; 
-            max-width: 120px; 
-            object-fit: contain;
-            margin-bottom: -5px; 
-        }
-
-        /* --- ZONE PRINCIPALE --- */
+        /* --- ZONE PRINCIPALE (CONTENT) --- */
         .app-content {
             flex: 1; 
             display: flex; 
             flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            padding: 20px; 
             position: relative;
             width: 100%;
+            overflow: hidden; /* Important pour l'iframe */
         }
 
-        /* --- SCÈNE 3D --- */
+        /* VUE 1 : SCÈNE 3D (CARTES) */
+        #view-cards {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+
+        /* VUE 2 : IFRAME (WEB) */
+        #view-web {
+            width: 100%; height: 100%;
+            display: none; /* Caché par défaut */
+            background: white;
+        }
+        
+        iframe {
+            width: 100%; height: 100%; border: none;
+        }
+
+        /* --- STYLE 3D --- */
         .scene {
-            width: 70%; 
-            max-width: 300px; 
-            aspect-ratio: 260 / 410;
-            height: auto; 
-            perspective: 1200px; 
-            cursor: grab;
-            margin-bottom: 20px; 
-            margin-top: -20px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 70%; max-width: 300px; aspect-ratio: 260 / 410; height: auto; 
+            perspective: 1200px; cursor: grab;
+            margin: -20px auto 20px auto;
         }
         .scene:active { cursor: grabbing; }
 
@@ -106,105 +101,85 @@
         }
         .card.is-animating { transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
-        /* --- FACES --- */
         .card__face {
             position: absolute; width: 100%; height: 100%;
             backface-visibility: hidden; -webkit-backface-visibility: hidden;
             border-radius: 20px; overflow: hidden;
-            background-size: cover; 
-            background-position: center; 
-            background-repeat: no-repeat;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
             background-color: white;
         }
-
-        /* RECTO */
-        .card__face--front { 
-            background-image: url('https://i.ibb.co/Gfjhyy2j/image-5.jpg'); 
-        }
-
-        /* --- TEXTE DATE/HEURE (MODIFIABLE ICI) --- */
-        .card-overlay-text {
-            position: absolute;
-            /* Changer ces valeurs pour bouger le texte */
-            top: 120px; 
-            left: 40px;
-            
-            /* Rotation */
-            transform-origin: top left;
-            transform: rotate(90deg);
-            
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            font-weight: 600; 
-            font-size: 14px; /* Taille du texte */
-            color: var(--text-blue-dark);
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* VERSO */
+        .card__face--front { background-image: url('https://i.ibb.co/Gfjhyy2j/image-5.jpg'); }
         .card__face--back {
             background-image: url('https://i.ibb.co/TqvnXp6S/51-A4-F091-3-B4-E-4469-BAEF-8-CCFAD657311.jpg');
             transform: rotateY(180deg);
         }
 
-        /* --- PAGINATION --- */
+        .card-overlay-text {
+            position: absolute; top: 120px; left: 40px;
+            transform-origin: top left; transform: rotate(90deg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 600; font-size: 14px; color: var(--text-blue-dark);
+            letter-spacing: 0.5px; white-space: nowrap; -webkit-font-smoothing: antialiased;
+        }
+
         .pagination-container {
             width: 100%; padding: 0 20px; margin-bottom: -20px;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-shrink: 0;
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
         }
-        
         .btn-pill {
-            background: #e0e0e0; color: white;
-            padding: 10px 20px; border-radius: 30px;
-            font-size: 0.9rem; font-weight: 600; border: none;
-            display: flex; align-items: center; gap: 8px;
-            white-space: nowrap; 
+            background: #e0e0e0; color: white; padding: 10px 20px; border-radius: 30px;
+            font-size: 0.9rem; font-weight: 600; border: none; display: flex; align-items: center; gap: 8px; white-space: nowrap; 
         }
-
-        /* BOUTON SUIVANT (COULEUR MODIFIABLE ICI) */
-        .btn-next { 
-            background: var(--primary-blue); /* Mettre un code couleur ex: #000000 */
-            box-shadow: 0 4px 10px rgba(0,86,164,0.3); 
-            cursor: pointer; 
-        }
-
+        .btn-next { background: var(--primary-blue); box-shadow: 0 4px 10px rgba(0,86,164,0.3); cursor: pointer; }
         .page-indicator { color: #003366; font-weight: 700; font-size: 1rem; }
 
         /* --- BARRE DE NAVIGATION BASSE --- */
         .bottom-nav {
-            /* --- MODIFICATION 3 : Fix pour barre d'accueil iPhone (Home Bar) --- */
-            height: auto; 
-            min-height: 85px;
+            height: auto; min-height: 85px;
             padding-bottom: calc(10px + env(safe-area-inset-bottom));
-            /* ------------------------------------------------------------------ */
-            
-            background: white;
-            display: flex; justify-content: space-around; align-items: flex-start;
-            padding-top: 15px; border-top: 1px solid #ebedf0;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.02);
-            flex-shrink: 0;
+            background: white; display: flex; justify-content: space-around; align-items: flex-start;
+            padding-top: 15px; border-top: 1px solid #ebedf0; border-radius: 20px 20px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.02); flex-shrink: 0;
         }
 
         .nav-item {
-            display: flex; flex-direction: column; align-items: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
             font-size: 0.7rem; color: var(--nav-gray); gap: 6px;
             width: 20%; position: relative; cursor: pointer;
-            text-decoration: none; /* Enlève le soulignement des liens */
+            text-decoration: none; border: none; background: none; padding: 0;
         }
-        .nav-icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; }
-
-        .nav-item.active { color: var(--primary-blue); }
-        .nav-item.active .icon-circle {
-            background-color: #dbeafe; width: 48px; height: 48px; border-radius: 50%;
+        
+        /* Conteneur de l'icône (pour l'animation du cercle) */
+        .icon-wrapper {
+            width: 48px; height: 48px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            margin-top: -25px; background: white;
-            border: 4px solid var(--bg-gray); box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: 0;
+            border: 4px solid transparent; /* Bordure invisible par défaut */
         }
-        .nav-item.active .nav-icon { stroke: var(--primary-blue); fill: var(--primary-blue); stroke-width: 0; width: 24px; height: 24px; }
-        .icon-cards-active rect { fill: var(--primary-blue); }
+        
+        .nav-icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; transition: all 0.2s ease; }
+
+        /* ÉTAT ACTIF */
+        .nav-item.active { color: var(--primary-blue); }
+        
+        /* Le rond bleu ne s'affiche que sur l'item actif */
+        .nav-item.active .icon-wrapper {
+            background-color: #dbeafe; 
+            margin-top: -35px; /* Fait remonter l'icône */
+            background: white;
+            border-color: var(--bg-gray); 
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-item.active .nav-icon { 
+            stroke: var(--primary-blue); 
+            fill: var(--primary-blue); 
+            stroke-width: 0; 
+        }
+
+        /* SVG spécial pour Mes Cartes quand actif */
+        .icon-cards-rect { fill: currentColor; stroke: none; }
     </style>
 </head>
 <body>
@@ -212,13 +187,9 @@
     <div class="app-container">
         <header class="app-header">
             <div class="header-bg-decoration"></div>
+            <img src="https://i.ibb.co/G3HyWqws/SETRAM-Logo.png" alt="Logo Setram" class="logo-setram-img">
             
-            <img 
-                src="https://i.ibb.co/G3HyWqws/SETRAM-Logo.png" 
-                alt="Logo Setram" 
-                class="logo-setram-img"
-            >
-            <div class="header-title">Mes cartes</div>
+            <div class="header-title" id="header-title">Mes cartes</div>
 
             <div style="display: flex; gap: 15px;">
                 <svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
@@ -227,62 +198,108 @@
         </header>
 
         <main class="app-content">
-            <div class="scene">
-                <div class="card" id="card">
-                    <div class="card__face card__face--front">
-                        <div class="card-overlay-text" id="realtime-clock">
-                            --/--/---- --:--:--
+            <div id="view-cards">
+                <div class="scene">
+                    <div class="card" id="card">
+                        <div class="card__face card__face--front">
+                            <div class="card-overlay-text" id="realtime-clock">--/--/---- --:--:--</div>
                         </div>
+                        <div class="card__face card__face--back"></div>
                     </div>
-                    <div class="card__face card__face--back"></div>
+                </div>
+                <div class="pagination-container">
+                    <div class="btn-pill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        Précédent
+                    </div>
+                    <div class="page-indicator">1 / 2 Cartes</div>
+                    <div class="btn-pill btn-next">
+                        Suivant
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
                 </div>
             </div>
 
-            <div class="pagination-container">
-                <div class="btn-pill">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    Précédent
-                </div>
-                <div class="page-indicator">1 / 2 Cartes</div>
-                <div class="btn-pill btn-next">
-                    Suivant
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </div>
+            <div id="view-web">
+                <iframe id="web-frame" src="" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
             </div>
         </main>
 
         <nav class="bottom-nav">
-            <a href="https://www.setram.dz/" class="nav-item">
-                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <div class="nav-item" onclick="switchTab(this, 'Accueil', 'https://www.setram.dz/')">
+                <div class="icon-wrapper">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </div>
                 <span>Accueil</span>
-            </a>
-            <a href="https://www.setram.dz/fr/carte" class="nav-item">
-                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </div>
+
+            <div class="nav-item" onclick="switchTab(this, 'Position', 'https://www.setram.dz/fr/carte')">
+                <div class="icon-wrapper">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
                 <span>Position</span>
-            </a>
-            <a href="https://www.setram.dz/fr/horaires" class="nav-item">
-                <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+
+            <div class="nav-item" onclick="switchTab(this, 'Horaires', 'https://www.setram.dz/schedules')">
+                <div class="icon-wrapper">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
                 <span>Horaires</span>
-            </a>
-            <a href="#" class="nav-item active">
-                <div class="icon-circle">
+            </div>
+
+            <div class="nav-item active" onclick="switchTab(this, 'Mes cartes', 'VIEW_CARDS')">
+                <div class="icon-wrapper">
                     <svg class="nav-icon icon-cards-active" viewBox="0 0 24 24">
-                        <rect x="2" y="6" width="16" height="12" rx="2" transform="rotate(-10 10 12)" fill="#dbeafe" stroke="none"/>
-                        <rect x="6" y="6" width="16" height="12" rx="2" fill="currentColor" stroke="none"/>
+                        <rect x="2" y="6" width="16" height="12" rx="2" transform="rotate(-10 10 12)" fill="#dbeafe" stroke="currentColor" stroke-width="1.5" class="icon-cards-rect"/>
+                        <rect x="6" y="6" width="16" height="12" rx="2" fill="currentColor" stroke="none" />
                     </svg>
                 </div>
                 <span>Mes cartes</span>
-            </a>
-            <a href="https://www.setram.dz/fr/contact" class="nav-item">
-                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+
+            <div class="nav-item" onclick="switchTab(this, 'Profile', 'https://www.setram.dz/fr/contact')">
+                <div class="icon-wrapper">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
                 <span>Profile</span>
-            </a>
+            </div>
         </nav>
     </div>
 
     <script>
         const card = document.getElementById('card');
         const scene = document.querySelector('.scene');
+        const viewCards = document.getElementById('view-cards');
+        const viewWeb = document.getElementById('view-web');
+        const webFrame = document.getElementById('web-frame');
+        const headerTitle = document.getElementById('header-title');
+
+        // --- FONCTION DE NAVIGATION PRINCIPALE ---
+        function switchTab(element, title, url) {
+            // 1. Gestion de l'UI (Active class)
+            // On enlève 'active' de tous les nav-item
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // On ajoute 'active' sur celui cliqué
+            element.classList.add('active');
+
+            // 2. Changer le titre
+            headerTitle.innerText = title;
+
+            // 3. Gestion de l'affichage (Iframe ou Cartes 3D)
+            if (url === 'VIEW_CARDS') {
+                // Si on clique sur Mes cartes
+                viewWeb.style.display = 'none';
+                viewCards.style.display = 'flex';
+                webFrame.src = ""; // On vide l'iframe pour économiser la mémoire
+            } else {
+                // Si on clique sur un autre lien
+                viewCards.style.display = 'none';
+                viewWeb.style.display = 'block';
+                // On charge l'URL dans l'iframe
+                // Note : Certains sites bloquent l'affichage en iframe (X-Frame-Options)
+                webFrame.src = url;
+            }
+        }
 
         // --- GESTION DE LA DATE ET HEURE ---
         function updateClock() {
@@ -295,11 +312,8 @@
             const seconds = String(now.getSeconds()).padStart(2, '0');
             
             const timeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-            
             const clockElement = document.getElementById('realtime-clock');
-            if(clockElement) {
-                clockElement.innerText = timeString;
-            }
+            if(clockElement) clockElement.innerText = timeString;
         }
         updateClock();
         setInterval(updateClock, 1000);
