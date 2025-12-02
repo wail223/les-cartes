@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SETRAM - Mes cartes</title>
     <style>
         /* --- CONFIGURATION GÉNÉRALE --- */
@@ -19,7 +19,13 @@
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #e0e5ec;
-            display: flex; justify-content: center; align-items: center; height: 100vh;
+            display: flex; justify-content: center; align-items: center; 
+            
+            /* --- MODIFICATION 2 : Gestion de la hauteur dynamique sur mobile --- */
+            height: 100vh;       /* Fallback */
+            height: 100dvh;      /* La vraie solution pour Safari/Chrome mobile */
+            /* ------------------------------------------------------------------ */
+            
             overflow: hidden; user-select: none;
         }
 
@@ -168,7 +174,13 @@
 
         /* --- BARRE DE NAVIGATION BASSE --- */
         .bottom-nav {
-            height: 85px; background: white;
+            /* --- MODIFICATION 3 : Fix pour barre d'accueil iPhone (Home Bar) --- */
+            height: auto; 
+            min-height: 85px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            /* ------------------------------------------------------------------ */
+            
+            background: white;
             display: flex; justify-content: space-around; align-items: flex-start;
             padding-top: 15px; border-top: 1px solid #ebedf0;
             border-radius: 20px 20px 0 0;
