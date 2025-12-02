@@ -10,6 +10,7 @@
             --primary-blue: #0056a4;
             --bg-gray: #f2f4f7;
             --nav-gray: #8e8e93;
+            --text-blue-dark: #183075; 
         }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -39,7 +40,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.03);
             z-index: 10;
             position: relative;
-            flex-shrink: 0; /* Le header ne s'écrase pas */
+            flex-shrink: 0; 
         }
         
         .header-bg-decoration {
@@ -59,8 +60,8 @@
         /* --- LOGO --- */
         .logo-setram-img {
             height: 40px; 
-            width: auto; /* Auto pour garder le ratio */
-            max-width: 120px; /* Sécurité */
+            width: auto; 
+            max-width: 120px; 
             object-fit: contain;
             margin-bottom: -5px; 
         }
@@ -77,28 +78,16 @@
             width: 100%;
         }
 
-        /* ========================================================== */
-        /* --- MODIFICATION ICI : SCÈNE 3D RESPONSIVE --- */
-        /* ========================================================== */
+        /* --- SCÈNE 3D --- */
         .scene {
-            /* 1. Largeur dynamique (70% de l'écran) */
             width: 70%; 
-            
-            /* 2. Largeur maximum pour les écrans larges */
             max-width: 300px; 
-
-            /* 3. Ratio hauteur/largeur verrouillé (Format carte vertical) */
             aspect-ratio: 260 / 410;
-            
-            /* 4. La hauteur se calcule automatiquement */
             height: auto; 
-            
             perspective: 1200px; 
             cursor: grab;
-            
-            /* Marges */
             margin-bottom: 20px; 
-            margin-top: -20px; /* Remonte légèrement la carte */
+            margin-top: -20px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -116,7 +105,6 @@
             position: absolute; width: 100%; height: 100%;
             backface-visibility: hidden; -webkit-backface-visibility: hidden;
             border-radius: 20px; overflow: hidden;
-            /* Important : cover permet à l'image de remplir la carte responsive */
             background-size: cover; 
             background-position: center; 
             background-repeat: no-repeat;
@@ -124,7 +112,29 @@
         }
 
         /* RECTO */
-        .card__face--front { background-image: url('https://i.ibb.co/Gfjhyy2j/image-5.jpg'); }
+        .card__face--front { 
+            background-image: url('https://i.ibb.co/Gfjhyy2j/image-5.jpg'); 
+        }
+
+        /* --- TEXTE DATE/HEURE (MODIFIABLE ICI) --- */
+        .card-overlay-text {
+            position: absolute;
+            /* Changer ces valeurs pour bouger le texte */
+            top: 120px; 
+            left: 40px;
+            
+            /* Rotation */
+            transform-origin: top left;
+            transform: rotate(90deg);
+            
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 600; 
+            font-size: 14px; /* Taille du texte */
+            color: var(--text-blue-dark);
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            -webkit-font-smoothing: antialiased;
+        }
 
         /* VERSO */
         .card__face--back {
@@ -136,7 +146,7 @@
         .pagination-container {
             width: 100%; padding: 0 20px; margin-bottom: -20px;
             display: flex; justify-content: space-between; align-items: center;
-            flex-shrink: 0; /* Ne rétrécit pas */
+            flex-shrink: 0;
         }
         
         .btn-pill {
@@ -144,9 +154,16 @@
             padding: 10px 20px; border-radius: 30px;
             font-size: 0.9rem; font-weight: 600; border: none;
             display: flex; align-items: center; gap: 8px;
-            white-space: nowrap; /* Texte sur une seule ligne */
+            white-space: nowrap; 
         }
-        .btn-next { background: var(--primary-blue); box-shadow: 0 4px 10px rgba(0,86,164,0.3); cursor: pointer; }
+
+        /* BOUTON SUIVANT (COULEUR MODIFIABLE ICI) */
+        .btn-next { 
+            background: var(--primary-blue); /* Mettre un code couleur ex: #000000 */
+            box-shadow: 0 4px 10px rgba(0,86,164,0.3); 
+            cursor: pointer; 
+        }
+
         .page-indicator { color: #003366; font-weight: 700; font-size: 1rem; }
 
         /* --- BARRE DE NAVIGATION BASSE --- */
@@ -163,6 +180,7 @@
             display: flex; flex-direction: column; align-items: center;
             font-size: 0.7rem; color: var(--nav-gray); gap: 6px;
             width: 20%; position: relative; cursor: pointer;
+            text-decoration: none; /* Enlève le soulignement des liens */
         }
         .nav-icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; }
 
@@ -199,7 +217,11 @@
         <main class="app-content">
             <div class="scene">
                 <div class="card" id="card">
-                    <div class="card__face card__face--front"></div>
+                    <div class="card__face card__face--front">
+                        <div class="card-overlay-text" id="realtime-clock">
+                            --/--/---- --:--:--
+                        </div>
+                    </div>
                     <div class="card__face card__face--back"></div>
                 </div>
             </div>
@@ -218,19 +240,19 @@
         </main>
 
         <nav class="bottom-nav">
-            <div class="nav-item">
+            <a href="https://www.setram.dz/" class="nav-item">
                 <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 <span>Accueil</span>
-            </div>
-            <div class="nav-item">
+            </a>
+            <a href="https://www.setram.dz/fr/carte" class="nav-item">
                 <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                 <span>Position</span>
-            </div>
-            <div class="nav-item">
+            </a>
+            <a href="https://www.setram.dz/fr/horaires" class="nav-item">
                 <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 <span>Horaires</span>
-            </div>
-            <div class="nav-item active">
+            </a>
+            <a href="#" class="nav-item active">
                 <div class="icon-circle">
                     <svg class="nav-icon icon-cards-active" viewBox="0 0 24 24">
                         <rect x="2" y="6" width="16" height="12" rx="2" transform="rotate(-10 10 12)" fill="#dbeafe" stroke="none"/>
@@ -238,11 +260,11 @@
                     </svg>
                 </div>
                 <span>Mes cartes</span>
-            </div>
-            <div class="nav-item">
+            </a>
+            <a href="https://www.setram.dz/fr/contact" class="nav-item">
                 <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 <span>Profile</span>
-            </div>
+            </a>
         </nav>
     </div>
 
@@ -250,6 +272,27 @@
         const card = document.getElementById('card');
         const scene = document.querySelector('.scene');
 
+        // --- GESTION DE LA DATE ET HEURE ---
+        function updateClock() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const timeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            
+            const clockElement = document.getElementById('realtime-clock');
+            if(clockElement) {
+                clockElement.innerText = timeString;
+            }
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // --- GESTION DU 3D DRAG ---
         let isDragging = false;
         let startX = 0;
         let currentRotation = 0;
@@ -290,8 +333,4 @@
         window.addEventListener('touchend', stopDrag);
     </script>
 </body>
-
 </html>
-
-
-
